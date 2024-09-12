@@ -274,73 +274,127 @@
 <!-- Table container para sa patientlist baka mabobo ka e -->
 <div id="content">
 <section id="patient-list" class="section">
-        <h2>Patient List</h2>
+    <h2>Patient List</h2>
 
-        <!-- Add button container -->
-        <div class="add-button-container">
-            <button onclick="location.href='patientreg.php'">Add Patient</button>
-        </div>
+    <div class="search-and-add-container">
+    <!-- Search bar container -->
+    <div class="search-container">
+        <input type="text" id="searchInput" onkeyup="searchTable3(this.value);" placeholder="Search for patients...">
+    </div>
 
-        <!-- Search bar container -->
-        <div class="search-container">
-            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for Patient...">
-        </div>
+    <!-- Dropdown container for categories -->
+    <div class="filter-container">
+        <label for="categoryDropdown">Filter by category:</label>
+        <select id="categoryDropdown" onchange="filterByCategory(this.value)">
+            <option value="">All</option> 
+            <option value="Pedia">Pedia</option>
+            <option value="Senior">Senior</option>
+            <option value="PWD">PWD</option>
+            <option value="OPD">OPD</option>
+            
+        </select>
+    </div>
 
-        <table id="patientTable">
-            <thead>
-                <tr>
-                    <th>Patient ID</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Birthday</th>
-                    <th>Address</th>
-                    <th>Contact Person</th>
-                    <th>Type</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                include 'connect.php';
+    <!-- Button container -->
+    <div class="add-button-container">
+        <button onclick="openAddPatientModal()">Add Patient</button>
+    </div>
+</div>
 
-                // Fetch patients from the database
-                $sql = "SELECT * FROM patient";
-                $result = $conn->query($sql);
+    <table id="patientTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Birthday</th>
+                <th>Address</th>
+                <th>Contact Person</th>
+                <th>Type</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            include 'connect.php';
 
-                // Output each patient as a table row
-                if ($result->num_rows > 0) {
-                    while($row = $result->fetch_assoc()) {
-                        echo "<tr>
-                                <td>" . $row["p_id"] . "</td>
-                                <td>" . $row["p_name"] . "</td>
-                                <td>" . $row["p_age"] . "</td>
-                                <td>" . $row["p_bday"] . "</td>
-                                <td>" . $row["p_address"] . "</td>
-                                <td>" . $row["p_contper"] . "</td>
-                                <td>" . $row["p_type"] . "</td>
-                                <td>
-                                <a href='#' class='edit-btn' onclick='openEditModal(" . $row["p_id"] . ", \"" . addslashes($row["p_name"]) . "\", \"" . $row["p_age"] . "\", \"" . $row["p_bday"] . "\", \"" . addslashes($row["p_address"]) . "\", \"" . addslashes($row["p_contper"]) . "\", \"" . addslashes($row["p_type"]) . "\")'><img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'></a>
-                                <a href='#' class='delete-btn' onclick='deletePatient(" . $row["p_id"] . ", \"" . addslashes($row["p_name"]) . "\", \"" . $row["p_age"] . "\", \"" . $row["p_bday"] . "\", \"" . addslashes($row["p_address"]) . "\", \"" . addslashes($row["p_contper"]) . "\", \"" . addslashes($row["p_type"]) . "\")'><img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'></a>
-                                </td>
-                            </tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='8'>No patients found</td></tr>";
+            // Fetch patients from the database
+            $sql = "SELECT * FROM patient";
+            $result = $conn->query($sql);
+
+            // Output each patient as a table row
+            if ($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                            <td>" . $row["p_name"] . "</td>
+                            <td>" . $row["p_age"] . "</td>
+                            <td>" . $row["p_bday"] . "</td>
+                            <td>" . $row["p_address"] . "</td>
+                            <td>" . $row["p_contper"] . "</td>
+                            <td>" . $row["p_type"] . "</td>
+                            <td>
+                            <a href='#' class='edit-btn' onclick='openEditPatient(" . $row["p_id"] . ", \"" . addslashes($row["p_name"]) . "\", \"" . $row["p_age"] . "\", \"" . $row["p_bday"] . "\", \"" . addslashes($row["p_address"]) . "\", \"" . addslashes($row["p_contper"]) . "\", \"" . addslashes($row["p_type"]) . "\")'><img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'></a>
+                            <a href='#' class='delete-btn' onclick='deletePatient(" . $row["p_id"] . ", \"" . addslashes($row["p_name"]) . "\", \"" . $row["p_age"] . "\", \"" . $row["p_bday"] . "\", \"" . addslashes($row["p_address"]) . "\", \"" . addslashes($row["p_contper"]) . "\", \"" . addslashes($row["p_type"]) . "\")'><img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'></a>
+                            </td>
+                        </tr>";
                 }
-                $conn->close();
-                ?>
-            </tbody>
-        </table>
-    </section>
+            } else {
+                echo "<tr><td colspan='8'>No patients found</td></tr>";
+            }
+            $conn->close();
+            ?>
+        </tbody>
+    </table>
+</section>
 
-<!-- LAGAY MO DITO MODAL --> 
+<!-- MODALS SECTION --> 
+
+
+
+<!-- Add Patient  -->
+
+<!-- Modal for adding new patient -->
+<div id="addPatientModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddPatientModal()">&times;</span>
+        <h3>Add New Patient</h3>
+        <form id="addpatient" onsubmit="submitPatientForm(event)">
+            <label for="p_name">Name:</label>
+            <input type="text" id="p_name" name="p_name" placeholder="SURNAME,FN,MN" required><br><br>
+            
+            <label for="p_age">Age:</label>
+            <input type="number" id="p_age" name="p_age" required><br><br>
+            
+            <label for="p_bday">Birthday:</label>
+            <input type="date" id="p_bday" name="p_bday" required><br><br>
+            
+            <label for="p_address">Address:</label>
+            <input type="text" id="p_address" name="p_address" required><br><br>
+            
+            <label for="p_contper">Contact Person:</label>
+            <input type="text" id="p_contper" name="p_contper" required><br><br>
+            
+            <label for="p_type">Patient Type:</label>
+            <select id="p_type" name="p_type" required>
+                <option value="">Select Patient Type</option>
+                <option value="Pedia">Pedia</option>
+                <option value="Senior">Senior</option>
+                <option value="PWD">PWD</option>
+                <option value="OPD">OPD</option>
+            </select><br><br>
+            
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</div>
+
+
 
 <!-- Modal for editing existing patient -->
 <div id="editPatientModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeEditPatientModal()">&times;</span>
         <h3>Edit Patient</h3>
-        <form id="editPatientForm" action="update_patient.php" method="post">
+        <form id="editPatientForm" onsubmit="submitEditPatientForm(event)">
             <input type="hidden" id="editPatientId" name="patientId">
             
             <label for="editName">Name:</label>
@@ -370,26 +424,27 @@
 
 
 
+
 <!-- MEDICINE INVETORY DITO --> 
 
 <section id="medicine-inventory" class="section">
         <h2>Medicine Inventory</h2>
-
-        <!-- Add button container -->
-        <div class="add-button-container">
-            <button onclick="openModal()">Add Medicine</button>
-        </div>
-
+        
+        <div class="search-and-add-container">
         <!-- Search bar container -->
         <div class="search-container">
-            <input type="text" id="searchInput" onkeyup="searchTable()" placeholder="Search for medicines...">
+        <input type="text" id="searchInput" onkeyup="searchTable2(this.value);" placeholder="Search for medical supplies...">
         </div>
+
+        <!-- Button container -->
+        <div class="add-button-container">
+            <button onclick="openAddMedicineModal()">Add Medicine</button>
+        </div>
+    </div>
 
         <table id="medTable">
             <thead>
                 <tr>
-                    <th>#</th>
-                    <th>Medicine ID</th>
                     <th>Medicine Name</th>
                     <th>Description</th>
                     <th>Stock In</th>
@@ -400,42 +455,45 @@
                 </tr>
             </thead>
             <tbody>
-                <?php
-                // Include database connection
-                include 'connect.php';
+            <?php
+include 'connect.php';
 
-                // Fetch data from the inv_meds table
-                $sql = "SELECT * FROM inv_meds";
-                $result = $conn->query($sql);
+$sql = "SELECT * FROM inv_meds";
+$result = $conn->query($sql);
 
-                // Check if any rows were returned
-                if ($result->num_rows > 0) {
-                    // Output data of each row
-                    while($row = $result->fetch_assoc()) {
-                        echo "<tr>";
-                        echo "<td></td>"; // Auto-numbering will be done via JavaScript
-                        echo "<td>" . $row["med_id"] . "</td>"; // Display ID
-                        echo "<td>" . $row["meds_name"] . "</td>";
-                        echo "<td>" . $row["med_dscrptn"] . "</td>";
-                        echo "<td>" . $row["stock_in"] . "</td>";
-                        echo "<td>" . $row["stock_out"] . "</td>";
-                        echo "<td>" . $row["stock_exp"] . "</td>";
-                        echo "<td>" . $row["stock_avail"] . "</td>";
-                        echo "<td class='action-icons'> 
-                        <a href='#' class='edit-btn' onclick='openEditModal(" . $row["med_id"] . ", \"" . $row["meds_name"] . "\", " . $row["stock_out"] . ", " . $row["stock_exp"] . ", " . $row["stock_avail"] . ")'><img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'></a>
-        <a href='#' class='delete-btn' onclick='deleteMedicine(" . $row["med_id"] . ")'><img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'></a>
-                        
-                      </td>";
-                
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='9'>No medicines found</td></tr>";
-                }
+if ($result->num_rows > 0) {
+    while($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>" . $row["meds_name"] . "</td>";
+        echo "<td>" . $row["med_dscrptn"] . "</td>";
+        echo "<td>" . $row["stock_in"] . "</td>";
+        echo "<td>" . $row["stock_out"] . "</td>";
+        echo "<td>" . $row["stock_exp"] . "</td>";
+        echo "<td>" . $row["stock_avail"] . "</td>";
+        echo "<td class='action-icons'>";
+        echo "<button onclick=\"openEditMed('" . 
+            $row["med_id"] . "', '" . 
+            $row["meds_name"] . "', '" . 
+            $row["med_dscrptn"] . "', '" . 
+            $row["stock_in"] . "', '" . 
+            $row["stock_out"] . "', '" . 
+            $row["stock_exp"] . "', '" . 
+            $row["stock_avail"] . "')\">";
+        echo "<img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'></button>";
 
-                // Close database connection
-                $conn->close();
-                ?>
+        echo "<button onclick=\"deleteMedicine('" . $row["med_id"] . "')\">";
+        echo "<img src='delete_icon.png' alt='Delete' class='delete-btn' style='width: 20px; height: 20px;'></button>";
+        
+        echo "</td>";
+        echo "</tr>";
+    }
+} else {
+    echo "<tr><td colspan='7'>No medicines found</td></tr>";
+}
+
+$conn->close();
+?>
+
             </tbody>
         </table>
     </section>
@@ -497,7 +555,7 @@
             $row["stck_avl"] . "')\">";
        echo "<img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'></button>";
        
-            echo "<button onclick=\"deleteEmergencysupply('" . $row["med_supId"] . "')\">";
+            echo "<button onclick=\"deleteMedicalSupply('" . $row["med_supId"] . "')\">";
             echo "<img src='delete_icon.png' alt='Delete' class='delete-btn' style='width: 20px; height: 20px;'></button>";
             echo "</td>";
             echo "</tr>";
@@ -511,73 +569,73 @@
 </tbody>
 
 </table>
-<!-- Egency Supply --> 
-<section id="emergency_supply-inventory" style="display: none;">
-    <h2>Emergency Supplies Inventory</h2>
-
-    <!-- Add button container -->
-    <div class="add-button-container">
-        <button onclick="openModal()">Add Emergency Supply</button>
-    </div>
-
-    <!-- Search bar container -->
-    <div class="search-container">
-        <input type="text" id="searchInput" onkeyup="searchTable1()" placeholder="Search for emergency supplies...">
-    </div>
-
-    <table id="medicalSupplyTable">
-    <thead>
-        <tr>
-            <th>Supply ID</th>
-            <th>Supply Name</th>
-            <th>Stock In</th>
-            <th>Stock Out</th>
-            <th>Expired</th>
-            <th>Stock Available</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-    </tbody>
-</table>
-
 </section>
        
 
 
-
-
-
-
-
-    <!-- Modal for adding new medicine -->
-    <div id="myModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3>Add New Medicine</h3>
-            <form action="add_meds.php" method="post">
-                <label for="medName">Medicine Name:</label>
-                <input type="text" id="medName" name="medName" required><br><br>
-                
-                <label for="medDesc">Description:</label>
-                <input type="text" id="medDesc" name="medDesc"><br><br>
-                
-                <label for="stockIn">Stock In:</label>
-                <input type="number" id="stockIn" name="stockIn" required><br><br>
-                
-                <label for="stockOut">Stock Out:</label>
-                <input type="number" id="stockOut" name="stockOut" required><br><br>
-                
-                <label for="stockExp">Expired:</label>
-                <input type="number" id="stockExp" name="stockExp" required><br><br>
-                
-                <label for="stockAvail">Stock Available:</label>
-                <input type="number" id="stockAvail" name="stockAvail" required><br><br>
-                
-                <input type="submit" value="Submit">
-            </form>
-        </div>
+<!-- Modal for adding new medicine -->
+<div id="addMedicineModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeAddMedicineModal()">&times;</span>
+        <h3>Add New Medicine</h3>
+        <form id="addmedicine" onsubmit="submitMedicineForm(event)">
+            <label for="medName">Medicine Name:</label>
+            <input type="text" id="medName" name="medName" required><br><br>
+            
+            <label for="medDesc">Description:</label>
+            <input type="text" id="medDesc" name="medDesc"><br><br>
+            
+            <label for="stockIn">Stock In:</label>
+            <input type="number" id="stockIn" name="stockIn" required><br><br>
+            
+            <label for="stockOut">Stock Out:</label>
+            <input type="number" id="stockOut" name="stockOut" required><br><br>
+            
+            <label for="stockExp">Expired:</label>
+            <input type="number" id="stockExp" name="stockExp" required><br><br>
+            
+            <label for="stockAvail">Stock Available:</label>
+            <input type="number" id="stockAvail" name="stockAvail" required><br><br>
+            
+            <input type="submit" value="Submit">
+        </form>
     </div>
+</div>
+
+
+
+<!-- Modal for editing medicine -->
+<div id="editMedicineModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeEditMedModal()">&times;</span>
+        <h3>Edit Medicine</h3>
+        <form id="editForm2" onsubmit="submitEditMedicineForm(event)">
+            <input type="hidden" id="editMedId" name="medId">
+            
+            <label for="editMedName">Medicine Name:</label>
+            <input type="text" id="editMedName" name="medName" required><br><br>
+            
+            <label for="editMedDesc">Description:</label>
+            <input type="text" id="editMedDesc" name="medDesc" required><br><br>
+            
+            <label for="editStockIn">Stock In:</label>
+            <input type="number" id="editStockIn" name="stockIn" required><br><br>
+            
+            <label for="editStockOut">Stock Out:</label>
+            <input type="number" id="editStockOut" name="stockOut" required><br><br>
+            
+            <label for="editStockExp">Expired:</label>
+            <input type="number" id="editStockExp" name="stockExp" required><br><br>
+            
+            <label for="editStockAvail">Stock Available:</label>
+            <input type="number" id="editStockAvail" name="stockAvail" required><br><br>
+            
+            <input type="submit" value="Update">
+        </form>
+    </div>
+</div>
+
+
 
 <!-- Modal for adding new medical supply -->
 <div id="addMedicalSupplyModal" class="modal">
@@ -610,83 +668,68 @@
     <div class="modal-content">
         <span class="close" onclick="closeEditModal()">&times;</span>
         <h3>Edit Medical/Emergency Supply</h3>
-        <form id="editForm" method="post">
-            <input type="hidden" id="editMedId" name="supplyId">
+        <form id="editForm" onsubmit="submitEditMedicalSupplyForm(event)">
+            <input type="hidden" id="editSuppId" name="supplyId">
             
             <label for="editSupplyName">Supply Name:</label>
             <input type="text" id="editSupplyName" name="supplyName" required><br><br>
             
             <label for="editStockIn">Stock In:</label>
-            <input type="number" id="editStockIn" name="stockIn" required><br><br>
+            <input type="number" id="editStockIn2" name="stockIn2" required><br><br>
             
             <label for="editStockOut">Stock Out:</label>
-            <input type="number" id="editStockOut" name="stockOut" required><br><br>
+            <input type="number" id="editStockOut2" name="stockOut2" required><br><br>
             
             <label for="editStockExp">Expired:</label>
-            <input type="number" id="editStockExp" name="stockExpired" required><br><br>
+            <input type="number" id="editStockExp2" name="stockExpired2" required><br><br>
             
             <label for="editStockAvail">Stock Available:</label>
-            <input type="number" id="editStockAvail" name="stockAvailable" required><br><br>
+            <input type="number" id="editStockAvail2" name="stockAvailable2" required><br><br>
             
             <input type="submit" value="Submit">
         </form>
     </div>
 </div>
 
-<!-- Modal for editing existing medicine -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <span class="close" onclick="closeEditModal()">&times;</span>
-        <h3>Edit Medical/Emergency Supply</h3>
-        <form id="editForm" action="update_meds.php" method="post">
-            <input type="hidden" id="editMedId" name="medId">
-            
-            <label for="editSupplyName">Supply Name:</label>
-            <input type="text" id="editSupplyName" name="supplyName" required><br><br>
-            
-            <label for="editStockOut">Stock Out:</label>
-            <input type="number" id="editStockOut" name="stockOut" required><br><br>
-            
-            <label for="editStockExp">Expired:</label>
-            <input type="number" id="editStockExp" name="stockExp" required><br><br>
-            
-            <label for="editStockAvail">Stock Available:</label>
-            <input type="number" id="editStockAvail" name="stockAvail" required><br><br>
-            
-            <input type="submit" value="Submit">
-        </form>
-    </div>
-</div>
 
    
 </div>
 <script>
+
+    // Function to set and activate the desired section based on navigation clicks
+    function setActiveSection(sectionId) {
+    window.location.hash = sectionId;  
+    toggleSection(sectionId); 
+    }
+
+
+    // Function to toggle visibility of sections
+    function toggleSection(sectionId) {
+        var sections = document.querySelectorAll('.section');
+        sections.forEach(function(section) {
+            if (section.id === sectionId) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+    }
+
+
     //INITIAL VARIABLES
 
     var addMedicalSupplyModal = document.getElementById("addMedicalSupplyModal"); //ADD MEDICAL SUPPLY 
     var editMedicalSupplyModal =document.getElementById("editMedicalSupplyModal") //EDIT MS
 
 
-    var editModal = document.getElementById("editModal");
-    var myModal = document.getElementById('myModal');
+    var addMedicineModal = document.getElementById("addMedicineModal"); //ADD MEDICINE
+    var editMedicineModal =document.getElementById("editMedicineModal") //EDIT MEDICINE
+
+    var addPatientModal = document.getElementById("addPatientModal")
+    var editPatientModal = document.getElementById("editPatientModal")
 
 
-
-    // Function to open a generic modal
-    function openModal() {
-        if (myModal) {
-            myModal.style.display = 'block';
-        }
-    }
-
-    // Function to close a generic modal
-    function closeModal() {
-        if (myModal) {
-            myModal.style.display = 'none';
-        }
-    }
-
-
+    //MEDICAL SUPPLY
     // FUNCTION FOR ADDING MEDICAL SUPPLY 
     function submitMedicalSupplyForm(event) {
     event.preventDefault(); 
@@ -697,13 +740,48 @@
         method: 'POST',
         body: formData
     })
-    .then(response => response.text())
-    .then(result => {
-        console.log('Success:', result);
-        closeAddMedicalSupplyModal(); 
-        location.reload();
+    .then(response => response.json()) 
+    .then(data => {
+        console.log('Success:', data);
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            
+            updateMedicalSupplyTable(data); 
+            closeAddMedicalSupplyModal(); 
+        }
     })
     .catch(error => console.error('Error submitting form:', error));
+}
+
+function updateMedicalSupplyTable(supplies) {
+    var tableBody = document.querySelector('#medicalSuppliesTable tbody');
+    tableBody.innerHTML = ''; 
+
+    if (Array.isArray(supplies) && supplies.length > 0) {
+        supplies.forEach(supply => {
+            var row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${supply.prod_name}</td>
+                <td>${supply.stck_in}</td>
+                <td>${supply.stck_out}</td>
+                <td>${supply.stck_expired}</td>
+                <td>${supply.stck_avl}</td>
+                <td class='action-icons'>
+                    <a href='#' class='edit-btn' onclick='openEditMedSupp(${supply.med_supId}, "${supply.prod_name}", ${supply.stck_in}, ${supply.stck_out}, ${supply.stck_expired}, ${supply.stck_avl})'>
+                        <img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='#' class='delete-btn' onclick='deleteMedicalSupply(${supply.med_supId})'>
+                        <img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'>
+                    </a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } else {
+        tableBody.innerHTML = '<tr><td colspan="6">No medical supplies found</td></tr>';
+    }
 }
 
 
@@ -723,27 +801,24 @@
 
 
     // Function to edit MS
-    function openEditMedSupp(medId, supplyName, stockIn, stockOut, stockExpired, stockAvailable) {
-    document.getElementById('editMedId').value = medId;
+    function openEditMedSupp(supplyId, supplyName, stockIn2, stockOut2, stockExpired2, stockAvailable2) {
+    document.getElementById('editSuppId').value = supplyId;
     document.getElementById('editSupplyName').value = supplyName;
-    document.getElementById('editStockIn').value = stockIn;
-    document.getElementById('editStockOut').value = stockOut;
-    document.getElementById('editStockExp').value = stockExpired;
-    document.getElementById('editStockAvail').value = stockAvailable;
+    document.getElementById('editStockIn2').value = stockIn2;
+    document.getElementById('editStockOut2').value = stockOut2;
+    document.getElementById('editStockExp2').value = stockExpired2;
+    document.getElementById('editStockAvail2').value = stockAvailable2;
 
-    editMedicalSupplyModal.style.display = 'block';
+    document.getElementById('editMedicalSupplyModal').style.display = 'block';
 }
 
-// Function to close the edit medical supply modal
-function closeEditMedSuppModal() {
+function closeEditModal() {
     var modal = document.getElementById("editMedicalSupplyModal");
     if (modal) {
         modal.style.display = 'none';
     }
 }
 
-
-// Function to submit the edit form data asynchronously
 function submitEditMedicalSupplyForm(event) {
     event.preventDefault(); 
 
@@ -753,112 +828,472 @@ function submitEditMedicalSupplyForm(event) {
         method: 'POST',
         body: formData
     })
-    .then(response => response.text())
-    .then(result => {
-        console.log('Success:', result);
-        closeEditMedSuppModal();
-        location.reload();
+    .then(response => response.json()) 
+    .then(data => {
+        console.log('Success:', data.data);
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            
+            updateMedicalSupplyTable(data.data); 
+            closeEditModal(); 
+        }
     })
     .catch(error => console.error('Error submitting form:', error));
 }
 
+
 document.getElementById('editForm').addEventListener('submit', submitEditMedicalSupplyForm);
 
+
+
 // Function to handle delete MS
-function deleteEmergencysupply(medSupId) {
-   
-    if (confirm('Are you sure you want to delete this item?')) {
-      
+function deleteMedicalSupply(medSupId) {
+    if (confirm('Are you sure you want to delete this supply?')) {
         fetch('delete_supply.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                'medSupId': medSupId
+                medSupId: medSupId
             })
         })
-        .then(response => response.text())
-        .then(result => {
-            console.log('Success:', result);
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                updateMedicalSupplyTable(data.supplies);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+}
+
+
+
+
+//MEDICINE
+
+    
+    // FUNCTION FOR ADDING MEDICINE
+function submitMedicineForm(event) {
+    event.preventDefault(); 
+
+    var formData = new FormData(document.getElementById('addmedicine')); 
+
+    fetch('add_meds.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) 
+    .then(data => {
+        console.log('Success:', data);
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            // Update the table with new data
+            updateMedicineTable(data);
+            closeAddMedicineModal();
+        }
+    })
+    .catch(error => console.error('Error submitting form:', error));
+}
+
+// Function to update the medicine table with new data
+function updateMedicineTable(medicines) {
+    var tableBody = document.querySelector('#medTable tbody');
+    tableBody.innerHTML = ''; // Clear existing table rows
+
+    if (medicines.length > 0) {
+        medicines.forEach(med => {
+            var row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${med.meds_name}</td>
+                <td>${med.med_dscrptn}</td>
+                <td>${med.stock_in}</td>
+                <td>${med.stock_out}</td>
+                <td>${med.stock_exp}</td>
+                <td>${med.stock_avail}</td>
+                <td class='action-icons'>
+                    <a href='#' class='edit-btn' onclick='openEditMed(${med.med_id}, "${med.meds_name}", ${med.stock_out}, ${med.stock_exp}, ${med.stock_avail})'>
+                        <img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='#' class='delete-btn' onclick='deleteMedicine(${med.med_id})'>
+                        <img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'>
+                    </a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } else {
+        tableBody.innerHTML = '<tr><td colspan="7">No medicines found</td></tr>';
+    }
+}
+
+
+function closeAddMedicineModal() {
+    if (addMedicineModal) {
+        addMedicineModal.style.display = 'none';
+    }
+}
+
+function openAddMedicineModal() {
+    if (addMedicineModal) {
+        addMedicineModal.style.display = 'block'; 
+    }
+}
+
+//Update MEds
+function openEditMed(medId, medName, medDesc, stockIn, stockOut, stockExpired, stockAvailable) {
+    document.getElementById('editMedId').value = medId;
+    document.getElementById('editMedName').value = medName;
+    document.getElementById('editMedDesc').value = medDesc;
+    document.getElementById('editStockIn').value = stockIn;
+    document.getElementById('editStockOut').value = stockOut;
+    document.getElementById('editStockExp').value = stockExpired;
+    document.getElementById('editStockAvail').value = stockAvailable;
+
+    document.getElementById('editMedicineModal').style.display = 'block';
+}
+
+// Function to close the edit medicine modal
+function closeEditMedModal() {
+    var modal = document.getElementById("editMedicineModal");
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Function to submit the edit form data asynchronously
+function submitEditMedicineForm(event) {
+    event.preventDefault();  // Prevent form from reloading the page
+
+    var formData = new FormData(document.getElementById('editForm2'));  
+
+    fetch('update_meds.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())  
+    .then(data => {
+        console.log('Success:', data);
+        if (data.error) {
+            alert('Error: ' + data.error);  
+        } else {
             
-            location.reload(); 
+            updateMedicineTable(data); 
+            closeEditMedModal();  
+        }
+    })
+    .catch(error => console.error('Error submitting form:', error));
+}
+
+document.getElementById('editForm2').addEventListener('submit', submitEditMedicineForm);
+
+
+
+// Function to handle delete medicine
+function deleteMedicine(medId) {
+    if (confirm('Are you sure you want to delete this item?')) {
+        fetch('delete_meds.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'medId': medId
+            })
+        })
+        .then(response => {
+            // Check if the response is in JSON format
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Unexpected content type: ' + contentType);
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                updateMedicineTable(data.medicines); 
+                document.querySelector(`#medRow${medId}`).remove(); 
+            } else {
+                alert('Error: ' + data.message);
+            }
         })
         .catch(error => console.error('Error deleting record:', error));
     }
 }
 
 
-//SEARCH FOR MED SUP
-function searchTable1(inputValue) {
-    // Convert the input value to lowercase
-    var searchQuery = inputValue.toLowerCase().trim();
+//PATIENTS
+function submitPatientForm(event) {
+    event.preventDefault(); 
 
-    // Get the table and its rows
+    var formData = new FormData(document.getElementById('addpatient')); 
+
+    fetch('patientprocess.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json()) 
+    .then(data => {
+        console.log('Success:', data);
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+
+            if (Array.isArray(data.patients)) {
+
+                updatePatientTable(data.patients);
+            } else {
+                console.error('Expected an array of patients but got:', data.patients);
+                alert('Failed to retrieve patient data.');
+            }
+            closeAddPatientModal();
+        }
+    })
+    .catch(error => console.error('Error submitting form:', error));
+}
+
+
+// Function to update the patient table with new data
+function updatePatientTable(patients) {
+    var tableBody = document.querySelector('#patientTable tbody');
+    tableBody.innerHTML = ''; // Clear existing table rows
+
+    if (patients.length > 0) {
+        patients.forEach(patient => {
+            var row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${patient.p_name}</td>
+                <td>${patient.p_age}</td>
+                <td>${patient.p_bday}</td>
+                <td>${patient.p_address}</td>
+                <td>${patient.p_contper}</td>
+                <td>${patient.p_type}</td>
+                <td>
+                    <a href='#' class='edit-btn' onclick='openEditPatient(${patient.p_id}, "${patient.p_name}", "${patient.p_age}", "${patient.p_bday}", "${patient.p_address}", "${patient.p_contper}", "${patient.p_type}")'>
+                        <img src='edit_icon.png' alt='Edit' style='width: 20px; height: 20px;'>
+                    </a>
+                    <a href='#' class='delete-btn' onclick='deletePatient(${patient.p_id})'>
+                        <img src='delete_icon.png' alt='Delete' style='width: 20px; height: 20px;'>
+                    </a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    } else {
+        tableBody.innerHTML = '<tr><td colspan="8">No patients found</td></tr>';
+    }
+}
+
+// Function to close the add patient modal
+function closeAddPatientModal() {
+    if (addPatientModal) {
+        addPatientModal.style.display = 'none';
+    }
+}
+
+// Function to open the add patient modal
+function openAddPatientModal() {
+    if (addPatientModal) {
+        addPatientModal.style.display = 'block'; 
+    }
+}
+
+
+//UPDATE FUNCTION
+// Function to open the edit patient modal and populate it with data
+function openEditPatient(patientId, name, age, birthday, address, contactPerson, type) {
+    document.getElementById('editPatientId').value = patientId;
+    document.getElementById('editName').value = name;
+    document.getElementById('editAge').value = age;
+    document.getElementById('editBirthday').value = birthday;
+    document.getElementById('editAddress').value = address;
+    document.getElementById('editContactPerson').value = contactPerson;
+    document.getElementById('editType').value = type;
+
+    // Show the modal
+    var editPatientModal = document.getElementById('editPatientModal');
+    editPatientModal.style.display = 'block';
+}
+
+// Function to close the edit patient modal
+function closeEditPatientModal() {
+    var editPatientModal = document.getElementById('editPatientModal');
+    editPatientModal.style.display = 'none';
+}
+
+// Function to handle the form submission for editing a patient
+function submitEditPatientForm(event) {
+    event.preventDefault(); 
+
+    var formData = new FormData(document.getElementById('editPatientForm')); 
+
+    fetch('update_patient.php', { 
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text()) 
+    .then(text => {
+        let data;
+        try {
+            data = JSON.parse(text); 
+        } catch (error) {
+            throw new Error('Failed to parse JSON response: ' + error.message);
+        }
+
+        console.log('Success:', data); 
+        if (data.error) {
+            alert('Error: ' + data.error); 
+        } else {
+            updatePatientTable(data.patients); 
+            closeEditPatientModal(); 
+        }
+    })
+    .catch(error => console.error('Error submitting form:', error)); 
+}
+
+//Delete function
+function deletePatient(patientId) {
+    if (confirm('Are you sure you want to delete this patient?')) {
+        fetch('delete_patient.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                'patientId': patientId
+            })
+        })
+        .then(response => {
+        
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Unexpected content type: ' + contentType);
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                updatePatientTable(data.patients); 
+                document.querySelector(`#patientRow${patientId}`).remove(); 
+            } else {
+                alert('Error: ' + data.message); 
+            }
+        })
+        .catch(error => console.error('Error deleting record:', error)); 
+    }
+}
+
+
+//SEARCHING FUNCTIONS
+
+
+// Function to search MEDICAL SUPPLIES
+function searchTable1(inputValue) {
+    var searchQuery = inputValue.toLowerCase().trim();
     var table = document.getElementById('medicalSuppliesTable');
     var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    
-    // Loop through the table rows
     for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
-        var cell = row.getElementsByTagName('td')[0]; // Assuming the supply name is in the second column (index 1)
+        var cell = row.getElementsByTagName('td')[0]; 
         
         if (cell) {
-            var cellValue = cell.textContent || cell.innerText; // Get the text content of the cell
-            // Check if the cell value contains the search query
+            var cellValue = cell.textContent || cell.innerText; 
             if (cellValue.toLowerCase().indexOf(searchQuery) > -1) {
-                row.style.display = ''; // Show the row if it matches
+                row.style.display = ''; 
             } else {
-                row.style.display = 'none'; // Hide the row if it doesn't match
+                row.style.display = 'none';
+            }
+        }
+    }
+}
+
+// Function to search MEDICINE INVENTORY
+function searchTable2(inputValue) {
+    var searchQuery = inputValue.toLowerCase().trim();
+    var table = document.getElementById('medTable'); 
+    var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var cell = row.getElementsByTagName('td')[0]; 
+
+        if (cell) {
+            var cellValue = cell.textContent || cell.innerText; 
+           
+            if (cellValue.toLowerCase().indexOf(searchQuery) > -1) {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none'; 
+            }
+        }
+    }
+}
+
+function searchTable3(inputValue) {
+    var searchQuery = inputValue.toLowerCase().trim();
+    var table = document.getElementById('patientTable'); 
+    var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var cell = row.getElementsByTagName('td')[0]; 
+
+        if (cell) {
+            var cellValue = cell.textContent || cell.innerText; 
+           
+            if (cellValue.toLowerCase().indexOf(searchQuery) > -1) {
+                row.style.display = ''; 
+            } else {
+                row.style.display = 'none'; 
             }
         }
     }
 }
 
 
+//filter using Dropdown
+function filterByCategory(selectedCategory) {
+    const table = document.getElementById('patientTable'); 
+    const rows = table.getElementsByTagName('tr');
 
-    //MEDICINE??
-    // Function to open the edit modal and populate it with the provided data
-    function openEditModal(medId, supplyName, stockOut, stockExp, stockAvail) {
-    document.getElementById('editMedId').value = medId;
-    document.getElementById('editSupplyName').value = supplyName;
-    document.getElementById('editStockOut').value = stockOut;
-    document.getElementById('editStockExp').value = stockExp;
-    document.getElementById('editStockAvail').value = stockAvail;
+    for (let i = 1; i < rows.length; i++) { 
+        const categoryCell = rows[i].getElementsByTagName('td')[5]; 
 
-    document.getElementById('editModal').style.display = 'block';
+        if (categoryCell) {
+            const category = categoryCell.textContent || categoryCell.innerText;
+
+            if (selectedCategory === "" || category.toLowerCase() === selectedCategory.toLowerCase()) {
+                rows[i].style.display = ""; 
+            } else {
+                rows[i].style.display = "none"; 
+            }
+        }
+    }
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').style.display = 'none';
-}
-
-
-
-
-
-    // Function to log out the user
+//logout
+    document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("logoutBtn").addEventListener("click", function() {
         window.location.href = "logout.php";
     });
+});
 
-    // Function to set and activate the desired section based on navigation clicks
-    function setActiveSection(sectionId) {
-        window.location.hash = sectionId;  
-        toggleSection(sectionId);  // Activate the corresponding section
-    }
-
-    // Function to toggle visibility of sections
-    function toggleSection(sectionId) {
-        var sections = document.querySelectorAll('.section');
-        sections.forEach(function(section) {
-            if (section.id === sectionId) {
-                section.style.display = 'block';
-            } else {
-                section.style.display = 'none';
-            }
-        });
-    }
 
     // When the page loads, show the appropriate section based on the URL hash
     window.onload = function() {
@@ -869,8 +1304,6 @@ function closeEditModal() {
              
         }
     };
-
-    
 
 
 </script>

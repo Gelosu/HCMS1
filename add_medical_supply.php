@@ -1,5 +1,4 @@
 <?php
-session_start();
 include 'connect.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -13,11 +12,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             VALUES ('$supplyName', '$stockIn', '$stockOut', '$stockExpired', '$stockAvailable')";
     
     if(mysqli_query($conn, $sql)){
-        echo "Records added successfully.";
+        // Fetch updated data
+        $sql = "SELECT * FROM inv_medsup";
+        $result = $conn->query($sql);
+        
+        $supplies = [];
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $supplies[] = $row;
+            }
+        }
+
+        echo json_encode($supplies);
     } else {
-        echo "ERROR: Could not execute $sql. " . mysqli_error($conn);
+        echo json_encode(['error' => "Error: " . mysqli_error($conn)]);
     }
     
-    mysqli_close($conn);
+    $conn->close();
 }
 ?>
